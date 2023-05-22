@@ -122,7 +122,7 @@ def follow_wall(speed):
     last_move = move
   
   face_goal(speed)
-  point_of_encounter_with_wall = (None, None)  
+  point_of_encounter_with_wall = (None, None, None)  
     
 def should_leave_wall():
 	global point_of_encounter_with_wall
