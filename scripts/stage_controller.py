@@ -13,6 +13,7 @@ LASER_FRONT = (500, 581)
 x = 0.0
 y = 0.0
 theta = 0.0
+
 # point_of_encounter_with_wall(x, y, angle_to_target)
 point_of_encounter_with_wall = (None, None, None)
 
@@ -22,8 +23,8 @@ point_of_encounter_with_wall = (None, None, None)
 # (4, -1) v .
 # (4.5, 5) v 
 
-target_x = -1 # -1 4 4.5 4
-target_y = 6 # 6 -1.5 5 7
+target_x = 4.5
+target_y = 5
 min_distance = 0.1
 
 MAX_DISTANCE_TO_WALL = .5
@@ -142,7 +143,7 @@ def should_leave_wall():
 	are_angles_close = poe_angle_to_target - angle_adjustment <= curr_angle_to_target <= poe_angle_to_target + angle_adjustment
 	if are_angles_close and not is_near_to_point_of_encounter(): 
 		if distance_to_target < poe_distance_to_target:
-			point_of_encounter_with_wall = (None, None)
+			point_of_encounter_with_wall = (None, None, None)
 			rospy.loginfo("Finished going around obstacle!")
 			return True
 	return False
@@ -175,8 +176,6 @@ if __name__ == "__main__":
 	init_listener()
 
 	speed = Twist()
-
-	should_follow_wall = False
 	rospy.Rate(5) # 10hz
  
 	pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)   
@@ -192,19 +191,15 @@ if __name__ == "__main__":
 			laser_front = get_laser_min_distance_within_range(LASER_FRONT)
    
 			if (laser_front <= MAX_DISTANCE_TO_WALL):
-				should_follow_wall = True
+				rospy.loginfo("Following wall...")
+				follow_wall(speed)
 			else:
 				if facing_point():
 					go(speed, STRAIGHT)
 				elif is_target_angle_closer_through_left():
 					go(speed, LEFT)
 				else:
-					go(speed, RIGHT)     
-    
-			if (should_follow_wall):
-				rospy.loginfo("Following wall...")
-				follow_wall(speed)
-				should_follow_wall = False
+					go(speed, RIGHT)     		
 
 		else:
 			speed.linear.x = 0.0
