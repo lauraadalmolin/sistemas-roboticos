@@ -13,8 +13,8 @@ LASER_FRONT = (500, 581)
 x = 0.0
 y = 0.0
 theta = 0.0
-# encountered_wall_at(x, y, angle_to_target)
-encountered_wall_at = (None, None, None)
+# point_of_encounter_with_wall(x, y, angle_to_target)
+point_of_encounter_with_wall = (None, None, None)
 
 # POINTS
 # (-1, 6) v
@@ -91,7 +91,7 @@ def face_goal(speed):
 		go(speed, RIGHT)
 
 def follow_wall(speed):
-  global encountered_wall_at
+  global point_of_encounter_with_wall
   global laser
   
   while get_laser_min_distance_within_range(LASER_FRONT) <= MAX_DISTANCE_TO_WALL:
@@ -122,19 +122,19 @@ def follow_wall(speed):
     last_move = move
   
   face_goal(speed)
-  encountered_wall_at = (None, None)  
+  point_of_encounter_with_wall = (None, None)  
     
 def should_leave_wall():
-	global encountered_wall_at
+	global point_of_encounter_with_wall
   
-	if None in encountered_wall_at:
-		encountered_wall_at = (x, y, get_angle_to_target())
+	if None in point_of_encounter_with_wall:
+		point_of_encounter_with_wall = (x, y, get_angle_to_target())
 		return False
 
 	curr_angle_to_target = get_angle_to_target()
  
 	# poe = point of encounter
-	(poe_x, poe_y, poe_angle_to_target) = encountered_wall_at
+	(poe_x, poe_y, poe_angle_to_target) = point_of_encounter_with_wall
 	poe_distance_to_target = math.sqrt( (poe_x-target_x)**2 + (poe_y-target_y)**2 )
 	distance_to_target = math.sqrt( (x-target_x)**2 +  (y-target_y)**2 )
 	angle_adjustment = 0.01
@@ -142,14 +142,14 @@ def should_leave_wall():
 	are_angles_close = poe_angle_to_target - angle_adjustment <= curr_angle_to_target <= poe_angle_to_target + angle_adjustment
 	if are_angles_close and not is_near_to_point_of_encounter(): 
 		if distance_to_target < poe_distance_to_target:
-			encountered_wall_at = (None, None)
+			point_of_encounter_with_wall = (None, None)
 			rospy.loginfo("Finished going around obstacle!")
 			return True
 	return False
 
 def is_near_to_point_of_encounter():
-	global encountered_wall_at
-	(poe_x, poe_y, _) = encountered_wall_at
+	global point_of_encounter_with_wall
+	(poe_x, poe_y, _) = point_of_encounter_with_wall
 
 	nearx = poe_x - .3 <= x <= poe_x + .3
 	neary = poe_y - .3 <= y <= poe_y + .3
